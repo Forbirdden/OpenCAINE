@@ -1,4 +1,4 @@
-(:epochs 15
- :target-ratio 0.9
- :learning-rate 80.0
+(:epochs 10
+ :target-ratio 0.35
+ :learning-rate 45.0
  :chaos-level 20)
