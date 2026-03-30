@@ -27,13 +27,12 @@
                                       (floor (/ (+ ob b) 2))))))))))))
         (opticl:write-image-file "output.png" out)))))
 
-;; БЕСКОНЕЧНЫЙ ЦИКЛ ОЖИДАНИЯ
 (format t "~%ENGINE ONLINE. AWAITING SIGNAL...~%")
 (loop
   (if (probe-file "SIGNAL.txt")
       (progn
         (format t "SIGNAL RECEIVED. SYNTHESIZING...~%")
         (caine-mutate)
-        (delete-file "SIGNAL.txt") ; Удаляем сигнал, когда закончили
+        (delete-file "SIGNAL.txt")
         (format t "DONE. SLEEPING...~%"))
-      (sleep 0.1))) ; Спим 100мс, чтобы не грузить процессор
+      (sleep 0.1)))

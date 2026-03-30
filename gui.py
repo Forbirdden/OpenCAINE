@@ -5,7 +5,7 @@ import time
 import threading
 import sys
 import platform
-import psutil # Если нет, сделай pip install psutil, или я заменю на стандартные
+import psutil
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import customtkinter as ctk
 from PIL import Image
@@ -25,7 +25,6 @@ class CaineInterface:
         os.makedirs("INPUT", exist_ok=True)
         if os.path.exists("SIGNAL.txt"): os.remove("SIGNAL.txt")
 
-        # --- 1. BOOT TERMINAL ---
         self.boot_frame = ctk.CTkFrame(self.root, fg_color="black", corner_radius=0)
         self.boot_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
         
@@ -34,9 +33,8 @@ class CaineInterface:
                                       padx=10, pady=10, activate_scrollbars=False)
         self.terminal.pack(fill="both", expand=True)
 
-        # --- 2. MAIN INTERFACE ---
         self.main_frame = ctk.CTkFrame(self.root, fg_color="black", corner_radius=0)
-        # Настройка сетки (фиксированные размеры)
+
         self.main_frame.grid_columnconfigure(0, weight=1, minsize=440)
         self.main_frame.grid_columnconfigure(1, weight=0, minsize=200)
         self.main_frame.grid_columnconfigure(2, weight=1, minsize=440)
@@ -46,32 +44,26 @@ class CaineInterface:
                                       font=("Courier", 20), text_color="white")
         self.left_label.grid(row=0, column=0)
 
-        # --- ЦЕНТРАЛЬНАЯ ПАНЕЛЬ (The Core) ---
         self.center_container = ctk.CTkFrame(self.main_frame, fg_color="black", width=200)
         self.center_container.grid(row=0, column=1)
 
-        # Создаем холст для свечения
         self.glow_canvas = ctk.CTkCanvas(self.center_container, width=140, height=140, 
                                         bg="black", highlightthickness=0)
         self.glow_canvas.pack(pady=20)
 
-        # Рисуем свечение (слои от прозрачного к яркому)
         def draw_glow(canvas):
             x, y, r = 70, 70, 60
-            # Рисуем 10 слоев затухания
             for i in range(r, 25, -4):
-                alpha = int(255 * (1 - i/r)**2) # Квадратичное затухание
-                color = f'#{alpha:02x}0000' # Постепенное превращение в красный
+                alpha = int(255 * (1 - i/r)**2)
+                color = f'#{alpha:02x}0000'
                 canvas.create_oval(x-i, y-i, x+i, y+i, fill=color, outline="")
             
-            # Центральное ядро (самое яркое)
             canvas.create_oval(x-25, y-25, x+25, y+25, fill="#FF0000", outline="#FF6666", width=2)
 
         draw_glow(self.glow_canvas)
 
-        # Делаем холст кликабельным
         self.glow_canvas.bind("<Button-1>", lambda e: self.run_lisp())
-        # Курсор при наведении
+
         self.glow_canvas.configure(cursor="hand2")
 
         
@@ -85,7 +77,6 @@ class CaineInterface:
         self.start_lisp_and_monitor()
 
     def insert_log(self, text, delay=0.01):
-        """Плавная печать логов"""
         self.terminal.insert("end", text + "\n")
         self.terminal.see("end")
         self.root.update()
@@ -99,7 +90,6 @@ class CaineInterface:
             self.insert_log("[SYS]: STARTING STEEL BANK COMMON LISP COMPILER...")
             self.insert_log("")
 
-            # Запуск Липса
             self.lisp_proc = subprocess.Popen(
                 ["sbcl", "--load", "caine-core.lisp"],
                 stdout=subprocess.PIPE,
@@ -109,7 +99,6 @@ class CaineInterface:
                 universal_newlines=True
             )
 
-            # Перехват вывода Липса
             for line in iter(self.lisp_proc.stdout.readline, ''):
                 self.terminal.insert("end", f"[SBCL]: {line}")
                 self.terminal.see("end")
@@ -129,7 +118,6 @@ class CaineInterface:
         self.root.dnd_bind('<<Drop>>', self.handle_drop)
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-    # ... (handle_drop, run_lisp, on_closing остаются без изменений)
     def handle_drop(self, event):
         data = event.data.strip('{}')
         files = self.root.tk.splitlist(data)
@@ -142,7 +130,7 @@ class CaineInterface:
                 img = img.resize((128, 128), Image.Resampling.LANCZOS)
                 img.save(f"INPUT/{current_count}.png", "PNG")
             except: pass
-        self.status.configure(text=f"TRAINING IMAGES COUNT:{current_count}", text_color="white")
+        self.status.configure(text=f"TRAINING IMAGES COUNT: {current_count}", text_color="white")
 
     def run_lisp(self):
         if os.path.exists("output.png"):
